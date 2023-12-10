@@ -1,3 +1,6 @@
+var interpolatingPolynomial = require('interpolating-polynomial')
+const fs = require('fs');
+
 const fileContent = fs.readFileSync("2309input.txt", 'utf-8');
 let reports = fileContent.split('\r\n')
 reports = reports.map(report => {
