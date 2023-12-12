@@ -58,10 +58,11 @@ let loopmarker = function(pipes){
     let [n1, n2] = findStartNeighbors(S,pipes)
     let [n1loc,n1dir] = n1
     let count = 0
+    let markers = {"-": 0, "|": 3, "L":1, "J":-1, "7": 2, "F":-2, "S": 1}
 
     //mark as seen
     let mark = function(i, j) {
-        pipes[i][j] === "-" ? pipes[i][j] = 0 : pipes[i][j] = 1;
+        pipes[i][j] = markers[pipes[i][j]]
     }
     mark(S[0],S[1])
     count ++
@@ -83,31 +84,46 @@ let loopmarker = function(pipes){
 
 let parttwo = function(pipes){
     let count = 0
-    let test = 50
 
     let markedpipes = loopmarker(pipes)
-    console.log(markedpipes)
-    console.log(markedpipes[test].join())
+    //console.log(markedpipes)
+    //console.log(markedpipes[test].join())
 
-    for (let i = test; i<test+1; i++){
+    for (let i = 0; i<markedpipes.length; i++){
         let row = markedpipes[i]
         let parity = 0
-        for (let cell of row){
+        for (let j = 0; j<row.length; j++){
+            let cell = row[j]
             if(Number.isInteger(cell)){
-                parity = (parity + cell) % 2
-                if (parity == 1) console.log("inside")
-                else console.log("outside")
+                parity = (parity + cell) % 6
+                if (parity == 3) console.log("inside")
             } else {
-                if (parity == 1) {
-                    console.log(cell)
+                if (parity == 3 || parity == -3) {
+                    markedpipes[i][j] = "#"
                     count++
                 } else {
-                    console.log(`${cell} is outside`)
+                    if (parity != 0) console.log(parity)
+                    //console.log(`${cell} is outside`)
                 }
             }
         }
     }
+    markedpipes = markedpipes.map(markedrow => markedrow.join(','))
+    //console.log(markedpipes)
     console.log(count)
+
+    let arrayString = markedpipes.join('\n')
+
+    const filePath = 'output.txt';
+
+    // Write the array to the file
+    fs.writeFile(filePath, arrayString, (err) => {
+        if (err) {
+            console.error('Error writing to file:', err);
+        } else {
+            console.log('Array successfully written to file:', filePath);
+        }
+    });
 }
 
 parttwo(pipes)
