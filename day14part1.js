@@ -15,7 +15,7 @@ function rotate90Degrees(stringsArray) {
 }
 rotatedRocks = rotate90Degrees(rocks)
 
-let collapseRow = function(rocks,i,direction){ //direction will only be 1 if it's north, else i'll floor it to 0
+let collapseRow = function(rocks,i){ //direction will only be 1 if it's north, else i'll floor it to 0
     let row = [...rocks[i]]
 
     let length = row.length
@@ -25,9 +25,9 @@ let collapseRow = function(rocks,i,direction){ //direction will only be 1 if it'
 
     for(let i = length-1; i>=0; i--){
         if (row[i] == "O"){
-            row[i] = '.'
-            row[marker-bumper-1] = 'O'
-            total += (marker - bumper) *direction
+            //row[i] = '.'
+            //row[marker-bumper-1] = 'O'
+            total += (marker - bumper)
             bumper++
         } else if (row[i] == "#"){
             marker = i
@@ -50,26 +50,4 @@ let partone = function(rocks){
 }
 
 //console.log(rotatedRocks)
-//partone(rotatedRocks)
-
-let parttwo = function(rocks){
-
-    let allTotal = {}
-    
-    for (let quarterRotations = 0; quarterRotations<400; quarterRotations++){
-        let total = 0
-        let direction = 4 - (quarterRotations % 4)
-        for (let i=0; i<rocks.length; i++){
-            total += collapseRow(rocks,i, Math.floor(direction/4))
-        }
-        rocks = rotate90Degrees(rocks)
-        if (total != 0){
-            allTotal[quarterRotations/4] = total
-        }
-    }
-    
-    console.log(allTotal)
-
-}
-
-parttwo(rotatedRocks)
+partone(rotatedRocks)
