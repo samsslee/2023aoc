@@ -16,10 +16,10 @@ const stepper = function(array, N){
         if(x+1 < garden.length && garden[x+1][y] != "#") {
             nextarray.push([x+1,y])
             }
-        if(y >= 0 && garden[x][y-1] != "#") {
+        if(y-1 >= 0 && garden[x][y-1] != "#") {
             nextarray.push([x,y-1])
             }
-        if(y < garden[0].length && garden[x][y+1] != "#") {
+        if(y+1 < garden[0].length && garden[x][y+1] != "#") {
             nextarray.push([x,y+1])
             }
     }
