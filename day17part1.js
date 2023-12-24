@@ -1,6 +1,5 @@
 const fs = require('fs');
 let city = fs.readFileSync("2317input.txt", 'utf-8').split('\r\n').map(row => row.split('').map(Number))
-//console.log(city)
 
 let queue = []
 let end = false
@@ -24,8 +23,8 @@ const insertQueue = function(state) {
     queue.splice(low, 0, state);
     //console.log(queue)
 }
-insertQueue({d: 0, n:{x:0, y:0, p:{x:1,y:0}, s:1}})//distance, coordinates, pointing direction ( 1 2 3 4 = e s w n), step counter
-insertQueue({d: 0, n:{x:0, y:0, p:{x:0,y:1}, s:1}})//east
+insertQueue({d: 0, n:{x:0, y:0, p:{x:1,y:0}, s:0}})//distance, coordinates, pointing direction ( 1 2 3 4 = e s w n), step counter
+insertQueue({d: 0, n:{x:0, y:0, p:{x:0,y:1}, s:0}})//east
 
 const buildNeighbor = function(state,p,s){
     let newx = state.n.x + p.x
@@ -35,19 +34,32 @@ const buildNeighbor = function(state,p,s){
     return {d:newd, n:{x:newx, y:newy, p:{x:p.x, y:p.y}, s:s}}
 }
 
+const ammendQueue = function(neighbor){
+    if(!sptSet.has(JSON.stringify(neighbor.n))){ //if it's not already a visited state
+        let index = queue.findIndex(obj => {
+            return JSON.stringify(obj.n) === JSON.stringify(neighbor.n);
+        });
+        if (index >= 0){ //if it's already enqueued
+            queue[index].d = Math.min(queue[index].d, neighbor.d)  //update how short of a space you can use to get to it
+        } else { //else just enqueue it normally
+            insertQueue(neighbor)
+        }
+    }
+}
+
 const makeNeighbors = function(state){
-    let neighbors = []
     let inbounds = {
-        '{"x":1,"y":0}': (x,y) => x + 1 < city.length,
+        '{"x":1,"y":0}': (x,y) => x + 1 < 141,
         '{"x":-1,"y":0}': (x,y) => x - 1 >= 0,
-        '{"x":0,"y":1}': (x,y) => y + 1 < city[0].length,
+        '{"x":0,"y":1}': (x,y) => y + 1 < 141,
         '{"x":0,"y":-1}': (x,y) => y - 1 >=0
     }
 
     //should we continue in this current direction?
-    if(state.n.s != 3){ //if we aren't at 3 steps yet
+    if(state.n.s < 3){ //if we aren't at 3 steps yet
         if(inbounds[JSON.stringify(state.n.p)](state.n.x, state.n.y)){ //if we are in bounds according to the direction
-            neighbors.push(buildNeighbor(state,state.n.p,state.n.s+1)) //push new distances and coordinates but same pointing direction, add one to the step counter
+            let neighbor = buildNeighbor(state,state.n.p,state.n.s+1)
+            ammendQueue(neighbor)
         }
     }
 
@@ -55,55 +67,34 @@ const makeNeighbors = function(state){
     if(state.n.p.x != 0){
         if(inbounds['{"x":0,"y":1}'](state.n.x, state.n.y)){
             let neighbor = buildNeighbor(state,{x:0,y:1},1)
-            console.log(sptSet.size, JSON.stringify(neighbor.n), sptSet)
-            console.log("here", sptSet.has(JSON.stringify(neighbor.n)), neighbor.n, sptSet.size)
-            if(!sptSet.has(JSON.stringify(neighbor.n))){
-                console.log("inside", neighbor.n)
-                neighbors.push(neighbor)
-            }
+            ammendQueue(neighbor)
         }
         if(inbounds['{"x":0,"y":-1}'](state.n.x, state.n.y)){
             let neighbor = buildNeighbor(state,{x:0,y:-1},1) //left
-            if(!sptSet.has(JSON.stringify(neighbor.n))){
-                neighbors.push(neighbor)
-            }
+            ammendQueue(neighbor)
         }
     }else{ //else you're going horizontally so make the verticals
         if(inbounds['{"x":1,"y":0}'](state.n.x, state.n.y)){
             let neighbor = buildNeighbor(state,{x:1,y:0},1) //down
-            console.log("neibnode", neighbor.n)
-            if(!sptSet.has(JSON.stringify(neighbor.n))){
-                neighbors.push(neighbor)
-            }
+            ammendQueue(neighbor)
         }
         if(inbounds['{"x":-1,"y":0}'](state.n.x, state.n.y)){
             let neighbor = buildNeighbor(state,{x:-1,y:0},1) //up
-            if(!sptSet.has(JSON.stringify(neighbor.n))){
-                neighbors.push(neighbor)
-            }
+            ammendQueue(neighbor)
         }
     }
-
-    console.log(neighbors)
-    return neighbors
 }
+
 let count = 0
-while (count<500){
-    let current = queue.pop()
-    //console.log("current", current)
+while (!end && queue.length>0){
     //console.log("queue", queue)
-    console.log(sptSet.has(JSON.stringify(current.n)), sptSet.size)
+    let current = queue.pop()
+    console.log("current", current, count)
     sptSet.add(JSON.stringify(current.n))
-    console.log(sptSet.has(JSON.stringify(current.n)), sptSet.size)
-    //console.log(sptSet)
-    if(current.n.x == city.length && current.n.y == city[0].length){
-        //console.log(current)
+    if(current.n.x == 140 && current.n.y == 140){
         end = true
     } else {
-        let neighbors = makeNeighbors(current)
-        for (let neighbor of neighbors){
-            insertQueue(neighbor)
-        }
+        makeNeighbors(current)
     }
     count++
 }
