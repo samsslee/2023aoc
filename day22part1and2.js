@@ -1,6 +1,4 @@
-const { create } = require("domain")
 let fs = require("fs")
-const { sup } = require("numeric")
 let bricks = fs.readFileSync("2322input.txt").toString('UTF8').split('\r\n').map(brick => {
     brick = brick.split(/[~,]/).map(Number)
     brick = {x:[brick[0],brick[3]], y:[brick[1],brick[4]], z:[brick[2],brick[5]]}
