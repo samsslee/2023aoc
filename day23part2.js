@@ -97,15 +97,17 @@ const findAllNeighbors = function(nx, ny){
 //BUILD EDGES
 
 //building all the edges
-let edges = new Map([])
-let nodeDistances = new Map([])
+let edges = {}
 
 //for the first source
 let start = [0,1] //start at the entry going down
 //find the first node
 let [dest, steps] = followPath(...start,1,0)
-edges.set(JSON.stringify(nodes[0]), [{dest: JSON.stringify(dest), steps: steps, available: true}])
-nodeDistances.set(JSON.stringify(nodes[0]), 0)
+edges[JSON.stringify(nodes[0])] = {[JSON.stringify(dest)]: steps}
+//find the last node
+let [dest2, steps2] = followPath(arr.length-1,arr[0].length-2,-1,0)
+edges[JSON.stringify([arr.length-1,arr[0].length-2])] = {[JSON.stringify(dest2)]: steps2}
+
 
 for (let n = 1; n <nodes.length; n++){
     //console.log(nodes[n])
@@ -115,63 +117,31 @@ for (let n = 1; n <nodes.length; n++){
 
     for (let neighbor of neighbors){
         let [dest, steps] = followPath(...neighbor)
-        if (edges.get(nodeName)){
-            edges.get(nodeName).push({dest: JSON.stringify(dest), steps: steps+1, available: true})
+        if (edges[nodeName]){
+            edges[nodeName][JSON.stringify(dest)] = steps+1
         } else{
-            edges.set(nodeName,[{dest: JSON.stringify(dest), steps: steps+1, available: true}])
-            nodeDistances.set(nodeName, 0)
+            edges[nodeName]= {[JSON.stringify(dest)]:steps+1}
         }
     }
 }
+console.log(edges)
 
-edges.set("source",[{dest:'[0,1]', steps:0, available: true}])
-nodeDistances.set(JSON.stringify([arr.length-1,arr[0].length-2]), 0)
-//console.log(nodeDistances)
+let maxPath = 0
 
-const deleteDest = function(target){
-    edges.forEach(s => {
-        let toDelete
-        for (let dest = 0; dest < s.length; dest++){
-            if (s[dest].dest == target){
-                s[dest].available = false
+const makePath = function(node, visited, length){
+    visited.push(node)
+
+    if(node == JSON.stringify([arr.length-1,arr[0].length-2])){
+        if(length > maxPath){maxPath = length}
+    } else {
+        for(let neighbor of Object.keys(edges[node])){
+            if (!visited.includes(neighbor)){
+                makePath(neighbor, [...visited], length+edges[node][neighbor])
             }
         }
-
-   })
-}
-//the node that has the exit should not have other paths to leave it, cheating a little here
-edges.get('[123,135]').pop()
-edges.get('[123,135]').pop()
-//console.log(edges)
-let stepCounts = []
-let activeStepCount = 0
-
-//pseudocode
-
-//initiate everything with source set it to current
-
-//call this function to look at current's dest
-//enter for loop for every dest
-//if dest is [140,139] then push stepcount as active+dest steps and return
-//if there are no destinations available then unmark this one as unavailable and then return (so then it'll do the for loop)
-//else mark current dest as "available = false" (and all the other ones with this destination as false)
-//call recursion on this function
-
-let mainrec = function(n){
-    let current = edges.get(n)
-    console.log(current)
-
-    for(let dest = 0; dest<current.length; dest++){
-        console.log("eh")
-        if (current[dest].dest == "[37,13]"){ //test case for me just the third thing we should reach
-            stepCounts.push(activeStepCount+current[dest].steps)
-        } else if (current[dest].available == true){
-            deleteDest(current[dest].dest)
-            activeStepCount += current[dest].steps
-            mainrec(current[dest].dest)
-        }
     }
 
 }
 
-mainrec("source")
+makePath('[0,1]',[], 0)
+console.log(maxPath)
